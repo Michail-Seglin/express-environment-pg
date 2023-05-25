@@ -1,5 +1,6 @@
 const express = require('express');
-const { getAllEnvironment, getSkillById } = require('../service/environment.service');
+const { getAllEnvironment, createEnvironment, getByID, updateEnv, deleteEnvID, pathEnv } = require('../service/environment.service');
+const { isValidEnvId, isValidEnvBody } = require('../helper/validation')
 const route = express.Router();
 
 route.get('/', async (req, res) => {
@@ -7,14 +8,55 @@ route.get('/', async (req, res) => {
     res.send(data)
 })
 
-route.get('/:id', async (req, res) => {
+route.get('/:id', isValidEnvId, isValidEnvBody, async (req, res) => {
     try {
         const { id } = req.params;
-        const data = await getSkillById(id);
-        res.status(200).send(data);
+        const data = await getByID(id);
+        res.status(200).send(data)
+    } catch (er) {
+        res.status(404).send(er)
     }
-    catch (error) {
-        res.status(404).send(error)
+})
+
+route.post('/', async (req, res) => {
+    try {
+        const { label, category, priority } = req.body;
+        const data = await createEnvironment(label, category, priority)
+        res.status(200).send(data);
+    } catch (er) {
+        res.status(404).send(er)
+    }
+})
+
+route.put('/:id', isValidEnvId, isValidEnvBody, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { label, category, priority } = req.body;
+        const data = await updateEnv(id, label, category, priority);
+        res.status(200).send(data)
+    } catch (er) {
+        res.status(404).send(er)
+    }
+})
+
+route.delete('/:id', isValidEnvId, isValidEnvBody, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const data = await deleteEnvID(id);
+        res.status(200).send(data)
+    } catch (er) {
+        res.status(404).send(er.message)
+    }
+})
+
+route.patch('/:id', isValidEnvId, isValidEnvBody, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const clientdata = req.body;
+        const data = await pathEnv(id, clientdata);
+        res.status(200).send(data)
+    } catch (er) {
+        res.status(404).send(er.message)
     }
 })
 
